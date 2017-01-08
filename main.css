@@ -1,0 +1,10 @@
+blockquote { color: blue ; }
+h1 { color: rgb(27, 153, 232); }
+strong { color: #00f; color: #f00;}
+p { color: navy } 
+#shihgin { color: darkcyan; 
+    font-family: BiauKai, arial; 
+    letter-spacing: 1em;
+    list-style: 1em;
+    font-weight: 800;}
+td[colspan="4"] { font-size: 20px ; text-align: center}
