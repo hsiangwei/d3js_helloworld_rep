@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>D3.js Hello World 2</title>
+    <meta name="description" content="An interactive getting started guide for Brackets.">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <style>
+        p {
+            border : 2px solid red;
+            height: 40px;
+            width: 120px;  
+            text-align: center;
+            line-height: 40px;
+        }
+    </style>
+</head>
+<body>
+    <script> 
+        function launch(){
+            var num = random(1911,2016);
+            console.log(num);
+            d3.select("p").text(num) ;
+        }
+        function random(n,m){
+            return Math.ceil(n+Math.random()*(m-n));
+        }
+        
+    </script>
+    
+    <p></p>
+    <input type="button" onclick="launch()" value="啟動">
+    
+</body>
+</html>
