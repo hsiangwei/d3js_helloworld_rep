@@ -29,24 +29,96 @@
         }
     </script>
     
+    <h5>HW3-1</h5><br>
     <p></p>
     <input type="button" onclick="launch()" value="啟動">
     <br><br>
     
     
-    <svg width="400" height=“300”>
-
+    <h5>HW3-2</h5><br>
+    <svg id="HW3-2" width="400" height="180">
     </svg>
     
+    <h5>HW3-3</h5><br>
+    
+    <svg id="HW3-3" width="400", height="400"></svg>
+    
     <script>
-        d3.select("svg")
+        
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++ ) {
+            color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+        
+        d3.select("#HW3-2")
+        .append("rect")
+        .attr("x", 0)
+        .attr("y", 0)
+        .attr("width", 400)
+        .attr("height", 300)
+        .attr("fill", "#FDF5E6");
+        
+        for (var i=0; i<5; i++){
+            d3.select("#HW3-2")
+            .append("line")
+            .attr("x1", 0)
+            .attr("y1", 20+i*30)
+            .attr("x2", 400)
+            .attr("y2", 20+i*30)
+            .attr("stroke", "black")
+            .attr("stroke-width", 2);
+        }
+        
+        var color = getRandomColor()
+        
+        d3.select("#HW3-2")
+        .append("rect")
+        .attr("x", 185)
+        .attr("y", 20)
+        .attr("width", 5)
+        .attr("height", 75)
+        .attr("fill", color);
+        
+        d3.select("#HW3-2")
         .append("circle")
-        .attr("cx", 100)
-        .attr("cy", 100)
+        .attr("cx", 175)
+        .attr("cy", 95)
         .attr("r", 15)
+        .attr("fill", color);
+        
+        d3.select("#HW3-2")
+        .append("text").text("A")
+        .attr("x", 165)
+        .attr("y", 170)
+        .attr("font-family","arial")
+        .attr("font-size", 38);
+        
+        
+        for (var i=0; i<20; i++){
+            var n=random(20,300);
+            d3.select("#HW3-3")
+            .append("rect")
+            .attr("x",10)
+            .attr("y", 20+i*20)
+            .attr("width", n)
+            .attr("height", 10)
+            .attr("fill", "red");
+            /*.attr({x: 10,y: 20+i*12,width: n,height: 10,fill: "red"});*/
+            d3.select("#HW3-3")
+            .append("text")
+            .attr("x", 10+n+15)
+            .attr("y", 30+i*20)
+            .attr("font-family","arial")
+            .attr("font-size", 12).text(n);
+        }
         
     </script>
     
+
     
 </body>
 </html>
