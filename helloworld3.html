@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>D3.js Hello World 3</title>
+    <meta name="description" content="An interactive getting started guide for Brackets.">
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <style>
+        div{
+            font-size: 7px;
+        }
+    </style>
+</head>
+
+<body>
+    <script>
+
+        /*read CSV*/
+        console.log("Ready");
+        /*XML 檔案格式要被淘汰了, JSON是新趨勢*/
+
+        /*要把拿到資料後要處理的動作放在function裡才不會先跑後面*/
+        /*因為讀資料要時間, js會先跑後面的程式碼*/
+        /*d3.csv("invoice-taipei.csv", function(dataSet_csv){
+            console.log(dataSet_csv)
+            var body = d3.select("body");
+            for(var i=0; i<dataSet_csv.length; i++){
+                if(dataSet_csv[i].amount>10000000){
+                    body.append("div").text(dataSet_csv[i].industry + ": NTD " + dataSet_csv[i].amount);
+                };
+            };
+        });*/
+
+        /*read JASON*/
+        /*d3.json("invoice-taipei.json", function(dataSet_json){
+            var body2 = d3.select("body");
+            for(var i=0; i<dataSet_json.length; i++){
+                if(dataSet_json[i].amount>1000000000 && dataSet_json[i].date==="2016/8/1" && dataSet_json[i].cid==="A"){
+
+                    body2.append("div").text(dataSet_json[i].industry + ": NTD " + dataSet_json[i].amount);
+
+                };
+            };
+        });*/
+
+    </script>
+
+    <h5>HW5-1</h5>
+    
+    <svg width="600" height="300"></svg>
+   
+    <script>
+        d3.json("invoice-taipei.json", function(dataSet){
+            var svg = d3.select("svg");
+            var count = 0;
+            for(var i=0; i<dataSet.length; i++){
+                if(dataSet[i].amount>1000000000 && dataSet[i].date==="2016/8/1" && dataSet[i].cid==="A"){
+                    d3.select("svg")
+                    .append("text")
+                    .attr("x", 0)
+                    .attr("y", 16+15*count)
+                    .attr("font-size", 10).text(dataSet[i].industry);
+                    d3.select("svg")
+                    .append("rect")
+                    .attr("x", 200)
+                    .attr("y", 10+15*count)
+                    .attr("width", dataSet[i].amount/100000000)
+                    .attr("height", 10)
+                    .attr("fill", "red");
+                    d3.select("svg")
+                    .append("text")
+                    .attr("x", dataSet[i].amount/100000000 + 210)
+                    .attr("y", 16+15*count)
+                    .attr("font-size", 10).text("NTD : "+Math.round(dataSet[i].amount/1000000,0)+" million");
+                    count=count+1;
+                 }  
+            }
+       });
+   </script>
+
+
+</body>
+</html>
