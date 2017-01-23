@@ -9,7 +9,7 @@
     <script src="https://d3js.org/d3.v4.min.js"></script>
     <style>
         div{
-            font-size: 7px;
+            font-size: 12px;
         }
     </style>
 </head>
@@ -46,30 +46,33 @@
         });*/
 
     </script>
-
+<!---------------------------------------------------->    
     <h5>HW5-1</h5>
     
-    <svg width="600" height="300"></svg>
+    <svg id="HW5-1" width="600" height="300"></svg>
+    
+    <h5>HW5-2</h5>
    
     <script>
+        
         d3.json("invoice-taipei.json", function(dataSet){
-            var svg = d3.select("svg");
+            var svg = d3.select("#HW5-1");
             var count = 0;
             for(var i=0; i<dataSet.length; i++){
                 if(dataSet[i].amount>1000000000 && dataSet[i].date==="2016/8/1" && dataSet[i].cid==="A"){
-                    d3.select("svg")
+                    d3.select("#HW5-1")
                     .append("text")
                     .attr("x", 0)
                     .attr("y", 16+15*count)
                     .attr("font-size", 10).text(dataSet[i].industry);
-                    d3.select("svg")
+                    d3.select("#HW5-1")
                     .append("rect")
                     .attr("x", 200)
                     .attr("y", 10+15*count)
                     .attr("width", dataSet[i].amount/100000000)
                     .attr("height", 10)
                     .attr("fill", "red");
-                    d3.select("svg")
+                    d3.select("#HW5-1")
                     .append("text")
                     .attr("x", dataSet[i].amount/100000000 + 210)
                     .attr("y", 16+15*count)
@@ -78,7 +81,131 @@
                  }  
             }
        });
+        
+       /*D3 Data Binding*/
+        var arr = [85, 60, 99, 49, 77, 82];
+
+        /*var Selection = d3.select("body")
+        .selectAll("div")
+        .data(arr);*/
+        
+        /*Selection.enter().append("div").text(function(d){return d;});
+        Selection.exit().remove();*/
+        
+        bind(arr);
+        render();
+        
+        function bind(data){
+            var Selection = d3.select("body")
+            .selectAll("div")
+            .data(data);
+            Selection.enter().append("div");
+            Selection.exit().remove();
+        }
+
+        function render(){
+            d3.selectAll("div").text(function(d, i){
+                    return i+": "+d;
+            }).style("color",  function(d){
+                        if(d>70){ return "red";}
+                        else{ return "black";}
+                        }
+                    );
+        }
+        
+        
+        
    </script>
+   
+<!----------------------------------------------------> 
+    <br><br>
+    <h5>HW5-3</h5><br>
+    <input type="button" onclick="add_arr()" value="新增">
+    <input type="button" onclick="del_arr()" value="刪除">
+    <script>
+        var arr = [85, 60, 99, 49, 77, 82];
+        var w = 900;
+        var h = 300;
+        var p = 100;
+        
+        svg();
+        bind(arr);
+        bind_t(arr);
+        render();
+        render_t();
+        
+        function svg(){
+            d3.select("body")
+            .append("svg")
+            .attr("id", "HW5-3")
+            .attr("width", w)
+            .attr("height", h)
+            .attr("padding", p);
+        }
+        
+        function bind(dataSet){
+            var Selection = d3.select("#HW5-3").selectAll("rect")
+            .data(dataSet);
+            Selection.enter().append("rect").attr("class", "HW5-3_rect");
+            Selection.exit().remove();
+
+        }
+        
+        function render(){
+            d3.selectAll(".HW5-3_rect")
+            .attr("x", function(d, i){ return p+i*30;})
+            .attr("y", function(d){ return h-p-d+20;})
+            .attr("width", 20)
+            .attr("height", function(d){ return d;})
+            .attr("fill", function(d){
+                if(d<70){ return "red";}
+                else{ return "lightgreen";}
+            });
+            
+        }
+        
+        function bind_t(dataSet){
+            var Selection = d3.select("#HW5-3").selectAll("text")
+            .data(dataSet);
+            Selection.enter().append("text").attr("class", "HW5-3_t");
+            Selection.exit().remove();
+
+        }
+        
+        function render_t(){
+            d3.selectAll(".HW5-3_t").text(function(d){ return d;})
+            .attr("x", function(d, i){ return p+i*30+10;})
+            .attr("y", function(d){ return 235;})
+            .attr("font-size", 13)
+            .attr("text-anchor", "middle")
+        }
+        
+        function add_arr(){
+            var num = random(40, 100);
+            arr.push(num);
+            bind(arr);
+            render();
+            bind_t(arr);
+            render_t();
+        }
+        
+        function del_arr(){
+            var num = random(40, 100);
+            arr.pop(num);
+            bind(arr);
+            render();
+            bind_t(arr);
+            render_t();
+        }
+        
+        
+        function random(n,m){
+            return Math.ceil(n+Math.random()*(m-n));
+        }
+        
+        
+    </script>
+   
 
 
 </body>
