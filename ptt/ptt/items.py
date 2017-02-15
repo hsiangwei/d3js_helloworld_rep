@@ -27,3 +27,16 @@ class PostItem(scrapy.Item):
     comments = scrapy.Field()
     score = scrapy.Field()
     url = scrapy.Field()
+    
+class PostItem2(scrapy.Item):
+    title = scrapy.Field()
+    #author = scrapy.Field()
+    date = scrapy.Field()
+    content = scrapy.Field()
+    #comments = scrapy.Field()
+    score = scrapy.Field()
+    #url = scrapy.Field()
+    L_score = scrapy.Field()
+    S_score = scrapy.Field()
+    isTarget = scrapy.Field()
+    targetName = scrapy.Field()

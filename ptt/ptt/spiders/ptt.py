@@ -3,6 +3,7 @@ import logging
 from scrapy.http import FormRequest
 from datetime import datetime
 from ptt.items import PostItem
+from ptt.items import PostItem2
 
 class PTTSpider(scrapy.Spider):
     name = 'ptt'
@@ -11,7 +12,7 @@ class PTTSpider(scrapy.Spider):
     _retries = 0
     MAX_RETRY = 1
     _pages = 0
-    MAX_PAGES = 10
+    MAX_PAGES = 1
 
     def parse(self, response):
         if len(response.xpath('//div[@class="over18-notice"]')) > 0:
@@ -45,13 +46,15 @@ class PTTSpider(scrapy.Spider):
     
                     
 #--------------------------------------
+
     def parse_post(self, response):
-        item = PostItem()
+        item = PostItem2()
         item['title'] = response.xpath(
             '//meta[@property="og:title"]/@content')[0].extract()
-        item['author'] = response.xpath(
-            '//div[@class="article-metaline"]/span[text()="作者"]/following-sibling::span[1]/text()')[
-                0].extract().split(' ')[0]
+        #不抓作者
+        #item['author'] = response.xpath(
+        #    '//div[@class="article-metaline"]/span[text()="作者"]/following-#sibling::span[1]/text()')[
+        #        0].extract().split(' ')[0]
         datetime_str = response.xpath(
             '//div[@class="article-metaline"]/span[text()="時間"]/following-sibling::span[1]/text()')[
                 0].extract()
@@ -61,6 +64,7 @@ class PTTSpider(scrapy.Spider):
             0].extract()
 
         comments = []
+        #改寫為推噓箭頭皆為1分
         total_score = 0
         for comment in response.xpath('//div[@class="push"]'):
             push_tag = comment.css('span.push-tag::text')[0].extract()
@@ -70,18 +74,50 @@ class PTTSpider(scrapy.Spider):
             if '推' in push_tag:
                 score = 1
             elif '噓' in push_tag:
-                score = -1
+                score = 1
             else:
-                score = 0
+                score = 1
 
             total_score += score
 
-            comments.append({'user': push_user,
-                             'content': push_content,
-                             'score': score})
-
-        item['comments'] = comments
+            #comments.append({'user': push_user,
+            #                 'content': push_content,
+            #                 'score': score})
+            
+        #不爬comment內容只爬分數
+        #item['comments'] = comments
         item['score'] = total_score
-        item['url'] = response.url
+        #不爬url
+        #item['url'] = response.url
 
+        #辨別是否為標的文
+        if item['title'].find('標的')>-1: 
+            item['isTarget'] = 1
+            if item['title'].find('Re:')==-1:
+                LS = 0
+                #找到內文 分類那行,  分辨多空
+                if LS==1:
+                    item['L_score'] = total_score * 1
+                    item['S_score'] = 0
+                elif LS==-1:
+                    item['L_score'] = 0
+                    item['S_score'] = total_score * -1  
+                    
+            elif item['title'].find('Re:')>-1:
+                LS = 0
+                #找到搜索內文, 分辨多空
+                if LS==1:
+                    item['L_score'] = total_score * 1
+                    item['S_score'] = 0
+                elif LS==-1:
+                    item['L_score'] = 0
+                    item['S_score'] = total_score * -1         
+            else:
+                item['L_score'] = 0
+                item['S_score'] = 0
+        else:
+            item['isTarget'] = 0
+            item['L_score'] = 0
+            item['S_score'] = 0
+        
         yield item
