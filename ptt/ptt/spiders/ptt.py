@@ -12,7 +12,7 @@ class PTTSpider(scrapy.Spider):
     _retries = 0
     MAX_RETRY = 1
     _pages = 0
-    MAX_PAGES = 1
+    MAX_PAGES = 5
 
     def parse(self, response):
         if len(response.xpath('//div[@class="over18-notice"]')) > 0:
@@ -93,9 +93,19 @@ class PTTSpider(scrapy.Spider):
         #辨別是否為標的文
         if item['title'].find('標的')>-1: 
             item['isTarget'] = 1
+            #試著辨認標的中文或是股號
             if item['title'].find('Re:')==-1:
                 LS = 0
                 #找到內文 分類那行,  分辨多空
+                idx = 0
+                idx = int(item['content'].find('分類'))
+                if item['content'][idx, idx+6].count('多')>=item['content'][idx, idx+6].count('空'):
+                    LS = 1
+                elif item['content'][idx, idx+6].count('多')<item['content'][idx, idx+6].count('空'):
+                    LS = -1
+                else:
+                    LS = 0
+                #設定多空分數
                 if LS==1:
                     item['L_score'] = total_score * 1
                     item['S_score'] = 0
@@ -105,7 +115,14 @@ class PTTSpider(scrapy.Spider):
                     
             elif item['title'].find('Re:')>-1:
                 LS = 0
-                #找到搜索內文, 分辨多空
+                #找到內文 分類那行,  分辨多空
+                idx = 0
+                if item['content'].count('多')>=item['content'].count('空'):
+                    LS = 1
+                elif item['content'].count('多')<item['content'].count('空'):
+                    LS = -1
+                else:
+                    LS = 0
                 if LS==1:
                     item['L_score'] = total_score * 1
                     item['S_score'] = 0
@@ -115,9 +132,12 @@ class PTTSpider(scrapy.Spider):
             else:
                 item['L_score'] = 0
                 item['S_score'] = 0
+                    
         else:
             item['isTarget'] = 0
             item['L_score'] = 0
             item['S_score'] = 0
         
         yield item
+        
+        
