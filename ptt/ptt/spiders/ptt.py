@@ -12,7 +12,7 @@ class PTTSpider(scrapy.Spider):
     _retries = 0
     MAX_RETRY = 1
     _pages = 0
-    MAX_PAGES = 5
+    MAX_PAGES = 150
 
     def parse(self, response):
         if len(response.xpath('//div[@class="over18-notice"]')) > 0:

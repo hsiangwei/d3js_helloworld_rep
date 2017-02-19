@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>candle stick ex2</title>
+    <script src="http://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="stockpage.css">
+</head>
+<body>
+
+<script type="text/javascript">
+    
+    
+    var w = 800, h = 400, p = 30, h2 = 200;
+    var barPadding = 4;
+    var svg = d3.select("body").append('svg').attr('width', w).attr('height', h+h2);  
+    
+    
+    d3.csv("0050.csv", function(data){
+        console.debug(JSON.stringify(data));
+        dataset = data;
+        var dataCnt = dataset.length;
+        var priceMin = d3.min(dataset, function (d) {
+            return d3.min([d.Open, d.High, d.Low, d.Close])
+        });
+        var priceMax = d3.max(dataset, function (d) {
+            return d3.max([d.Open, d.High, d.Low, d.Close])
+        });
+
+        var yscale = d3.scale.linear()
+            .domain([priceMin, priceMax])
+            .range([0, h-p]);
+    
+        var yscale_axis = d3.scale.linear()
+            .domain([priceMin, priceMax])
+            .range([h-p, 0]);
+    
+        var xscale_axis = d3.scale.linear()
+            .domain([0, w-p])
+            .range([0, w-p]);
+    
+    
+        var rectAttr = {
+            'x': function (d, i) {
+                return  p + i * ((w - p) / dataCnt)
+            },
+            'y': function (d, i) {
+                return (h - p) - yscale(d3.max([d.Open,d.Close]));
+            },
+            'width': function (d, i) {
+                return (w - p) / dataCnt - barPadding;
+            },
+            'height': function (d, i) {
+                return Math.abs(yscale(d.Open) - yscale(d.Close));
+            },
+            "fill": function (d) {
+                if (d.Open < d.Close) return 'red';
+                else return 'green';
+            }
+            //bar中間點 (p + i * ((w - p) / dataCnt)) + (((w - p) / dataCnt - barPadding) / 2)
+        };
+
+        var lineAttr = {
+            'x1' : function (d, i) {
+                return p + i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
+            },
+            'x2': function (d, i) {
+                return p +  i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
+            },
+            'y1': function (d, i) {
+                return (h - p) - yscale(d3.max([d.Open, d.High, d.Low, d.Close]));
+            },
+            'y2': function (d, i) {
+                return (h - p) - yscale(d3.min([d.Open, d.High, d.Low, d.Close]));
+            },
+            "stroke": function (d) {
+                if (d.Open < d.Close) return 'red';
+                else return 'green';
+            }  
+        };
+        
+        var LcircleAttr = {
+            'cx' : function (d, i) {
+                return p + i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
+            },
+            'cy' : function (d, i) {
+                return h+50;
+            },
+            'r' : function (d, i) {
+                return (d.L_score)
+            },  
+            'style' : function () {
+                return 'fill:pink;stroke:red;stroke-width:1;'
+            }
+        };
+        
+    
+        svg.selectAll('rect').data(dataset).enter().append('rect').attr(rectAttr);
+        //svg.selectAll('rect').data(dataset).exit().remove();
+        svg.selectAll('line').data(dataset).enter().append('line').attr(lineAttr);
+        var yAxis = d3.svg.axis().scale(yscale_axis).orient("left");
+        d3.select("svg").append("g").attr("class","axis").attr("transform", "translate("+p+",0)").call(yAxis);
+        var xAxis = d3.svg.axis().scale(xscale_axis).orient("bottom");
+        d3.select("svg").append("g").attr("class","axis").attr("transform", "translate("+p+","+(h-p)+")").call(xAxis);   
+        svg.selectAll('circle').data(dataset).enter().append('circle').attr(LcircleAttr);
+        
+        
+    });
+    
+    
+    
+    </script>
+
+
+</body>
+</html>
