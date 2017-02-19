@@ -13,12 +13,25 @@
 <script type="text/javascript">
     
     
+    
     var w = 800, h = 400, p = 30, h2 = 200;
     var barPadding = 4;
     var svg = d3.select("body").append('svg').attr('width', w).attr('height', h+h2);  
     
+    var customTimeFormat = d3.time.format.multi([
+    [".%L", function(d) { return d.getMilliseconds(); }],
+    [":%S", function(d) { return d.getSeconds(); }],
+    ["%I:%M", function(d) { return d.getMinutes(); }],
+    ["%I %p", function(d) { return d.getHours(); }],
+    ["%a %d", function(d) { return d.getDay() && d.getDate() != 1; }],
+    ["%b %d", function(d) { return d.getDate() != 1; }],
+    ["%B", function(d) { return d.getMonth(); }],
+    ["%Y", function() { return true; }]
+    ]);
     
-    d3.csv("0050.csv", function(data){
+    // 問題待解 放一個選單 改變資料來源
+    datasource = "0050.csv"
+    d3.csv(datasource, function(data){
         console.debug(JSON.stringify(data));
         dataset = data;
         var dataCnt = dataset.length;
@@ -28,7 +41,14 @@
         var priceMax = d3.max(dataset, function (d) {
             return d3.max([d.Open, d.High, d.Low, d.Close])
         });
-
+        
+        //問題待解, 非一一對應開盤日期
+        var xscale_axis = d3.time.scale()
+            .domain([new Date(d3.min(dataset, function(d){ return new Date(d.Date)})),
+                     new Date(d3.max(dataset, function(d){ return new Date(d.Date)}))
+                    ])
+            .range([0, w-p]);
+        
         var yscale = d3.scale.linear()
             .domain([priceMin, priceMax])
             .range([0, h-p]);
@@ -36,11 +56,14 @@
         var yscale_axis = d3.scale.linear()
             .domain([priceMin, priceMax])
             .range([h-p, 0]);
-    
+        /*
         var xscale_axis = d3.scale.linear()
             .domain([0, w-p])
             .range([0, w-p]);
-    
+        */
+        var xAxis = d3.svg.axis().scale(xscale_axis).orient("bottom").tickFormat(customTimeFormat);
+        
+        var yAxis = d3.svg.axis().scale(yscale_axis).orient("left");
     
         var rectAttr = {
             'x': function (d, i) {
@@ -82,6 +105,7 @@
         };
         
         var LcircleAttr = {
+            'id' : "Lcircle",
             'cx' : function (d, i) {
                 return p + i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
             },
@@ -92,7 +116,23 @@
                 return (d.L_score)
             },  
             'style' : function () {
-                return 'fill:pink;stroke:red;stroke-width:1;'
+                return 'fill:pink;opacity:0.75;stroke:red;stroke-width:1;'
+            }
+        };
+        
+        var ScircleAttr = {
+            'id' : "Scircle",
+            'cx' : function (d, i) {
+                return p + i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
+            },
+            'cy' : function (d, i) {
+                return h+50;
+            },
+            'r' : function (d, i) {
+                return (d.S_score)
+            },  
+            'style' : function () {
+                return 'fill:lightgreen;opacity:0.75;stroke:green;stroke-width:1;'
             }
         };
         
@@ -100,11 +140,11 @@
         svg.selectAll('rect').data(dataset).enter().append('rect').attr(rectAttr);
         //svg.selectAll('rect').data(dataset).exit().remove();
         svg.selectAll('line').data(dataset).enter().append('line').attr(lineAttr);
-        var yAxis = d3.svg.axis().scale(yscale_axis).orient("left");
+        
         d3.select("svg").append("g").attr("class","axis").attr("transform", "translate("+p+",0)").call(yAxis);
-        var xAxis = d3.svg.axis().scale(xscale_axis).orient("bottom");
         d3.select("svg").append("g").attr("class","axis").attr("transform", "translate("+p+","+(h-p)+")").call(xAxis);   
-        svg.selectAll('circle').data(dataset).enter().append('circle').attr(LcircleAttr);
+        svg.selectAll('#Lcircle').data(dataset).enter().append('circle').attr(LcircleAttr);
+        svg.selectAll('#Scircle').data(dataset).enter().append('circle').attr(ScircleAttr);
         
         
     });
