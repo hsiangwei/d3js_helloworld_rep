@@ -30,10 +30,20 @@
     ]);
     
     // 問題待解 放一個選單 改變資料來源
-    datasource = "0050.csv"
+    datasource = "pttstock3.csv"
     d3.csv(datasource, function(data){
-        console.debug(JSON.stringify(data));
-        dataset = data;
+        //console.debug(JSON.stringify(data));
+        JSON.stringify(data);
+        
+        var filtered_dataSet = data.filter( function(d){
+                return d.StockNum==="3406";
+            });
+        
+        //處理格式成數字
+    
+        dataset = filtered_dataSet;
+        console.debug(dataset)
+        
         var dataCnt = dataset.length;
         var priceMin = d3.min(dataset, function (d) {
             return d3.min([d.Open, d.High, d.Low, d.Close])
@@ -41,6 +51,9 @@
         var priceMax = d3.max(dataset, function (d) {
             return d3.max([d.Open, d.High, d.Low, d.Close])
         });
+        
+        console.debug(priceMin)
+        console.debug(priceMax)
         
         //問題待解, 非一一對應開盤日期
         var xscale_axis = d3.time.scale()
@@ -65,6 +78,46 @@
         
         var yAxis = d3.svg.axis().scale(yscale_axis).orient("left");
     
+        var rectAttr_0 = {
+            'x': function (d, i) {
+                return  p + i * ((w - p) / dataCnt)
+            },
+            'y': function (d, i) {
+                return p;
+            },
+            'width': function (d, i) {
+                return (w - p) / dataCnt - barPadding;
+            },
+            'height': function (d, i) {
+                return Math.abs(yscale(d.Open) - yscale(d.Close));
+            },
+            "fill": function (d) {
+                if (d.Open < d.Close) return 'red';
+                else return 'green';
+            }
+            //bar中間點 (p + i * ((w - p) / dataCnt)) + (((w - p) / dataCnt - barPadding) / 2)
+        };
+
+        var lineAttr_0 = {
+            'x1' : function (d, i) {
+                return p + i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
+            },
+            'x2': function (d, i) {
+                return p +  i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
+            },
+            'y1': function (d, i) {
+                return p;
+            },
+            'y2': function (d, i) {
+                return p;
+            },
+            "stroke": function (d) {
+                if (d.Open < d.Close) return 'red';
+                else return 'green';
+            }  
+        };
+        
+        
         var rectAttr = {
             'x': function (d, i) {
                 return  p + i * ((w - p) / dataCnt)
@@ -104,6 +157,39 @@
             }  
         };
         
+        
+        var LcircleAttr_0 = {
+            'id' : "Lcircle",
+            'cx' : function (d, i) {
+                return p;
+            },
+            'cy' : function (d, i) {
+                return h+50;
+            },
+            'r' : function (d, i) {
+                return 0
+            },  
+            'style' : function () {
+                return 'fill:pink;opacity:0.2;stroke:red;stroke-width:1;'
+            }
+        };
+        
+        var ScircleAttr_0 = {
+            'id' : "Scircle",
+            'cx' : function (d, i) {
+                return p;
+            },
+            'cy' : function (d, i) {
+                return h+50;
+            },
+            'r' : function (d, i) {
+                return 0
+            },  
+            'style' : function () {
+                return 'fill:lightgreen;opacity:0.2;stroke:green;stroke-width:1;'
+            }
+        };
+        
         var LcircleAttr = {
             'id' : "Lcircle",
             'cx' : function (d, i) {
@@ -113,7 +199,7 @@
                 return h+50;
             },
             'r' : function (d, i) {
-                return (d.L_score)
+                return (d.L_score/10)
             },  
             'style' : function () {
                 return 'fill:pink;opacity:0.75;stroke:red;stroke-width:1;'
@@ -129,7 +215,7 @@
                 return h+50;
             },
             'r' : function (d, i) {
-                return (d.S_score)
+                return -(d.S_score/10)
             },  
             'style' : function () {
                 return 'fill:lightgreen;opacity:0.75;stroke:green;stroke-width:1;'
@@ -137,14 +223,28 @@
         };
         
     
-        svg.selectAll('rect').data(dataset).enter().append('rect').attr(rectAttr);
-        //svg.selectAll('rect').data(dataset).exit().remove();
-        svg.selectAll('line').data(dataset).enter().append('line').attr(lineAttr);
+        svg.selectAll('rect').data(dataset).enter().append('rect')
+            .attr(rectAttr_0)
+            .transition().delay(1000).duration(2000)
+            .attr(rectAttr);
+
+        svg.selectAll('line').data(dataset).enter().append('line')
+            .attr(lineAttr_0)
+            .transition().delay(1000).duration(2000)
+            .attr(lineAttr)
         
         d3.select("svg").append("g").attr("class","axis").attr("transform", "translate("+p+",0)").call(yAxis);
         d3.select("svg").append("g").attr("class","axis").attr("transform", "translate("+p+","+(h-p)+")").call(xAxis);   
-        svg.selectAll('#Lcircle').data(dataset).enter().append('circle').attr(LcircleAttr);
-        svg.selectAll('#Scircle').data(dataset).enter().append('circle').attr(ScircleAttr);
+        
+        svg.selectAll('#Lcircle').data(dataset).enter().append('circle')
+            .attr(LcircleAttr_0)
+            .transition().delay(1000).duration(2000)
+            .attr(LcircleAttr);
+        
+        svg.selectAll('#Scircle').data(dataset).enter().append('circle')
+            .attr(ScircleAttr_0)
+            .transition().delay(1000).duration(2000)
+            .attr(ScircleAttr);
         
         
     });
