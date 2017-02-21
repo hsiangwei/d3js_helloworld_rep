@@ -9,13 +9,22 @@
     <link rel="stylesheet" href="stockpage.css">
 </head>
 <body>
+<select>
+    <option value="9999">大盤</option>
+    <option value="2317">2317 鴻海</option>
+    <option value="3406">3406 玉晶光</option>
+    <option value="2371">2371 大同</option>
+    <option value="6702">6702 復興航空</option>
+    <option value="2498">2498 宏達電</option>
+    <option value="2330">2330 台積電</option>
+</select><br>
 
 <script type="text/javascript">
     
     
     
-    var w = 800, h = 400, p = 30, h2 = 200;
-    var barPadding = 4;
+    var w = 800, h = 400, p = 35, h2 = 200;
+    var barPadding = 1;
     var svg = d3.select("body").append('svg').attr('width', w).attr('height', h+h2);  
     
     var customTimeFormat = d3.time.format.multi([
@@ -31,26 +40,31 @@
     
     // 問題待解 放一個選單 改變資料來源
     datasource = "pttstock3.csv"
-    d3.csv(datasource, function(data){
+    d3.csv(datasource, row, function(data){
         //console.debug(JSON.stringify(data));
         JSON.stringify(data);
         
-        var filtered_dataSet = data.filter( function(d){
-                return d.StockNum==="3406";
+        var filtered_dataset = data.filter( function(d){
+                return d.StockNum==="9999";
+            });
+        
+        var filtered_dataset_axis_adjust = data.filter( function(d){
+                return d.Open!==0 && d.StockNum==="9999";
             });
         
         //處理格式成數字
     
-        dataset = filtered_dataSet;
+        dataset = filtered_dataset;
         console.debug(dataset)
         
         var dataCnt = dataset.length;
-        var priceMin = d3.min(dataset, function (d) {
+        var priceMin = d3.min(filtered_dataset_axis_adjust, function (d) {
             return d3.min([d.Open, d.High, d.Low, d.Close])
         });
-        var priceMax = d3.max(dataset, function (d) {
+        var priceMax = d3.max(filtered_dataset_axis_adjust, function (d) {
             return d3.max([d.Open, d.High, d.Low, d.Close])
         });
+        
         
         console.debug(priceMin)
         console.debug(priceMax)
@@ -249,7 +263,14 @@
         
     });
     
-    
+    function row(d){
+        //TODO-1.轉換資料型態，提示：三行
+        d.Open = +d.Open;
+        d.High = +d.High;
+        d.Low = +d.Low;
+        d.Close = +d.Close
+        return d;
+    }
     
     </script>
 
