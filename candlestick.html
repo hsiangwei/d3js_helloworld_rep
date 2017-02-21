@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>ptt股板是不是反指標呢?</title>
+    <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="stockpage.css">
+</head>
+<body>
+
+<!--<select>
+    <option value="9999">大盤</option>
+    <option value="2317">2317 鴻海</option>
+    <option value="3406">3406 玉晶光</option>
+    <option value="2371">2371 大同</option>
+    <option value="6702">6702 復興航空</option>
+    <option value="2498">2498 宏達電</option>
+    <option value="2330">2330 台積電</option>
+</select><br>-->
+
+<script type="text/javascript">
+    
+    //基本邊寬長度設定, 放上svg畫布
+    var w = 800, h = 400, p = 35, h2 = 200;
+    var barPadding = 1;
+    var svg = d3.select("body").append('svg').attr('width', w).attr('height', h+h2);  
+    
+    //時間format, 給axis用的
+    var customTimeFormat = d3.time.format.multi([
+    [".%L", function(d) { return d.getMilliseconds(); }],
+    [":%S", function(d) { return d.getSeconds(); }],
+    ["%I:%M", function(d) { return d.getMinutes(); }],
+    ["%I %p", function(d) { return d.getHours(); }],
+    ["%a %d", function(d) { return d.getDay() && d.getDate() != 1; }],
+    ["%b %d", function(d) { return d.getDate() != 1; }],
+    ["%B", function(d) { return d.getMonth(); }],
+    ["%Y", function() { return true; }]
+    ]);
+    
+    var datasource = "pttstock3.csv"
+    var selectedStock = "9999"
+    
+    //d3.select("select").on("change",function(){
+    //    var value = d3.select("select").property("value");
+    //});
+    
+    d3.csv(datasource, row, function(data){
+        //console.debug(JSON.stringify(data));
+        JSON.stringify(data);
+        //從選單挑選標的
+        
+        //var selectedStock = d3.select("select").property("value");
+        //過濾出資料
+        var filtered_dataset = data.filter( function(d){
+                return d.StockNum===selectedStock;
+            });
+        //為了使沒有開盤日的0值不干擾 y axis 創造的 dataset
+        var filtered_dataset_axis_adjust = data.filter( function(d){
+                return d.Open!==0 && d.StockNum===selectedStock;
+            });
+        //處理格式成數字
+        dataset = filtered_dataset;
+        //console.debug(dataset)
+        //取得資料筆數, max min price
+        //var dataCnt = dataset.length;
+        var priceMin = d3.min(filtered_dataset_axis_adjust, function (d) {
+            return d3.min([d.Open, d.High, d.Low, d.Close])
+        });
+        var priceMax = d3.max(filtered_dataset_axis_adjust, function (d) {
+            return d3.max([d.Open, d.High, d.Low, d.Close])
+        });
+        //設定x, y scale and axis scale
+        var xscale_axis = d3.time.scale()
+            .domain([new Date(d3.min(dataset, function(d){ return new Date(d.Date)})),
+                     new Date(d3.max(dataset, function(d){ return new Date(d.Date)}))
+                    ])
+            .range([0, w-p]);
+    
+        var yscale_axis = d3.scale.linear()
+            .domain([priceMin, priceMax])
+            .range([h-p, 0]);
+
+        var xAxis = d3.svg.axis().scale(xscale_axis).orient("bottom").tickFormat(customTimeFormat);
+        
+        var yAxis = d3.svg.axis().scale(yscale_axis).orient("left");
+        
+        bind_candlestick(dataset);
+        bind_circle(dataset);
+        render_candlestick(dataset, priceMin, priceMax);
+        render_circle(dataset, priceMin, priceMax);
+        
+        //render axis
+        d3.select("svg").append("g").attr("class","axis").attr("transform", "translate("+p+",0)").call(yAxis);
+        d3.select("svg").append("g").attr("class","axis").attr("transform", "translate("+p+","+(h-p)+")").call(xAxis);   
+
+        
+    });
+    
+    function row(d){
+        //轉換資料型態
+        d.Open = +d.Open;
+        d.High = +d.High;
+        d.Low = +d.Low;
+        d.Close = +d.Close
+        return d;
+    }
+    
+    function bind_candlestick(dataset){
+        //bind rect
+        var SelectionRect = svg.selectAll('rect').data(dataset);
+        SelectionRect.enter().append('rect')
+        SelectionRect.exit().remove();
+        //bind line
+        var SelectionLine = svg.selectAll('line').data(dataset);
+        SelectionRect.enter().append('line');
+        SelectionRect.exit().remove();
+    }
+    
+    function bind_circle(dataset){
+        //bind L circle
+        var SelectionLC = svg.selectAll('circle.Lcircle').data(dataset);
+        SelectionLC.enter().append('circle').attr("class","Lcircle")
+        SelectionLC.exit().remove();
+        console.debug("LC binded");
+        //bind S circle
+        var SelectionSC = svg.selectAll('circle.Scircle').data(dataset);
+        SelectionSC.enter().append('circle').attr("class","Scircle")
+        SelectionSC.exit().remove();
+        //console.debug("SC binded");
+    }
+    
+    function render_candlestick(dataset, priceMin, priceMax){
+        
+        var dataCnt = dataset.length;
+        
+        var yscale = d3.scale.linear()
+            .domain([priceMin, priceMax])
+            .range([0, h-p]);
+        
+        var rectAttr_0 = {
+            'x': function (d, i) {
+                return  p + i * ((w - p) / dataCnt)
+            },
+            'y': function (d, i) {
+                return p;
+            },
+            'width': function (d, i) {
+                return (w - p) / dataCnt - barPadding;
+            },
+            'height': function (d, i) {
+                return Math.abs(yscale(d.Open) - yscale(d.Close));
+            },
+            "fill": function (d) {
+                if (d.Open < d.Close) return 'red';
+                else return 'green';
+            }
+            //bar中間點 (p + i * ((w - p) / dataCnt)) + (((w - p) / dataCnt - barPadding) / 2)
+        };
+
+        var lineAttr_0 = {
+            'x1' : function (d, i) {
+                return p + i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
+            },
+            'x2': function (d, i) {
+                return p +  i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
+            },
+            'y1': function (d, i) {
+                return p;
+            },
+            'y2': function (d, i) {
+                return p;
+            },
+            "stroke": function (d) {
+                if (d.Open < d.Close) return 'red';
+                else return 'green';
+            }  
+        };
+        
+        var rectAttr = {
+            'x': function (d, i) {
+                return  p + i * ((w - p) / dataCnt)
+            },
+            'y': function (d, i) {
+                return (h - p) - yscale(d3.max([d.Open,d.Close]));
+            },
+            'width': function (d, i) {
+                return (w - p) / dataCnt - barPadding;
+            },
+            'height': function (d, i) {
+                return Math.abs(yscale(d.Open) - yscale(d.Close));
+            },
+            "fill": function (d) {
+                if (d.Open < d.Close) return 'red';
+                else return 'green';
+            }
+            //bar中間點 (p + i * ((w - p) / dataCnt)) + (((w - p) / dataCnt - barPadding) / 2)
+        };
+
+        var lineAttr = {
+            'x1' : function (d, i) {
+                return p + i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
+            },
+            'x2': function (d, i) {
+                return p +  i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
+            },
+            'y1': function (d, i) {
+                return (h - p) - yscale(d3.max([d.Open, d.High, d.Low, d.Close]));
+            },
+            'y2': function (d, i) {
+                return (h - p) - yscale(d3.min([d.Open, d.High, d.Low, d.Close]));
+            },
+            "stroke": function (d) {
+                if (d.Open < d.Close) return 'red';
+                else return 'green';
+            }  
+        };
+        
+        svg.selectAll('rect')
+            .attr(rectAttr_0)
+            .transition().delay(1000).duration(2000)
+            .attr(rectAttr);
+        
+        svg.selectAll('line')
+            .attr(lineAttr_0)
+            .transition().delay(1000).duration(2000)
+            .attr(lineAttr)
+        
+    }
+    
+    function render_circle(dataset, priceMin, priceMax){
+        
+        var dataCnt = dataset.length;
+
+        var yscale = d3.scale.linear()
+            .domain([priceMin, priceMax])
+            .range([0, h-p]);
+        
+        var LcircleAttr_0 = {
+            'cx' : function (d, i) {
+                return p;
+            },
+            'cy' : function (d, i) {
+                return h+50;
+            },
+            'r' : function (d, i) {
+                return 0
+            },  
+            'style' : function () {
+                return 'fill:pink;opacity:0.2;stroke:red;stroke-width:1;'
+            }
+        };
+        
+        var ScircleAttr_0 = {
+            'cx' : function (d, i) {
+                return p;
+            },
+            'cy' : function (d, i) {
+                return h+100;
+            },
+            'r' : function (d, i) {
+                return 0
+            },  
+            'style' : function () {
+                return 'fill:lightgreen;opacity:0.2;stroke:green;stroke-width:1;'
+            }
+        };
+        
+        var LcircleAttr = {
+            'cx' : function (d, i) {
+                return p + i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
+            },
+            'cy' : function (d, i) {
+                return h+50;
+            },
+            'r' : function (d, i) {
+                return (d.L_score/10)
+            },  
+            'style' : function () {
+                return 'fill:pink;opacity:0.75;stroke:red;stroke-width:1;'
+            }
+        };
+        
+        var ScircleAttr = {
+            'cx' : function (d, i) {
+                return p + i * ((w - p) / dataCnt) + ((w - p) / dataCnt - barPadding) / 2;
+            },
+            'cy' : function (d, i) {
+                return h+100;
+            },
+            'r' : function (d, i) {
+                return -(d.S_score/10)
+            },  
+            'style' : function () {
+                return 'fill:lightgreen;opacity:0.75;stroke:green;stroke-width:1;'
+            }
+        };
+                
+        svg.selectAll('.Lcircle')
+            .attr(LcircleAttr_0)
+            .transition().delay(1000).duration(2000)
+            .attr(LcircleAttr);
+        //console.debug("LC redered");
+        
+        svg.selectAll('.Scircle')
+            .attr(ScircleAttr_0)
+            .transition().delay(1000).duration(2000)
+            .attr(ScircleAttr);
+        //console.debug("SC redered");
+        
+    }
+    
+    </script>
+
+
+</body>
+</html>
