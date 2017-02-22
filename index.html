@@ -2,11 +2,11 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>Untitled Document</title>
+    <title>ptt股板是不是反指標呢?</title>
     <script src="https://d3js.org/d3.v3.js"></script>
     <style>
         body{
-            background: #eee;
+            background: black;
         }
     </style>
 </head>
@@ -15,20 +15,33 @@
         var w = 1000;
         var h = 600;
         var padding = 90;
+        var datasource = "pttstock3.csv"
         
         svg();       
     
-        d3.csv("invoice-taipei.csv", row, function(dataSet){
+        d3.csv(datasource, row, function(dataSet){
             
-            bind(dataSet);
-            render();
+            var nested_dataSet =d3.nest()
+                                .key(function(d){ return d.StockNum;})
+                                .rollup(function(d){ 
+                                    return d3.sum(d, function(g){ return g.L_score-g.S_score})
+                                })
+                                .entries(dataSet);
+            
+            console.debug(nested_dataSet);
+            bind(nested_dataSet);
+            render(nested_dataSet);
            
         });
+    
         function row(d){
-            
-            d.amount = +d.amount;
-            d.number = +d.number;
-                
+            //轉換資料型態
+            d.Open = +d.Open;
+            d.High = +d.High;
+            d.Low = +d.Low;
+            d.Close = +d.Close
+            d.L_score = +d.L_score
+            d.S_score = +d.S_score
             return d;
         }
         
@@ -40,38 +53,84 @@
             d3.select("svg").append("g").append("rect").attr({
                 width: "100%",
                 height: "100%",
-                fill: "white"
+                fill: "black"
             });
            
         }
         
-        function bind(dataSet){
-            //TODO-依日期分類產生新陣列
-            var nested_dataSet = [];
-                               
-            //console.log(nested_dataSet);
+        function bind(nested_dataSet){
             
             var force = d3.layout.force()
                         .size([w,h])
                         //TODO-調整彼此引力參數
-                        .charge(-30)
-                        .friction(0.9)
+                        .charge(-1600)
+                        .friction(0.6)
                         .gravity(0.1)
                         .nodes(nested_dataSet)  
                         .on("tick", render)
                         .start();
             
             var selection = d3.select("svg")
-                                .selectAll("circle")
-                                .data(nested_dataSet);
+                              .selectAll("circle")
+                              .data(nested_dataSet);
+            
             selection.enter().append("circle").call(force.drag);
             selection.exit().remove();
+            
+            var selection2 = d3.select("svg")
+                               .selectAll("text")
+                               .data(nested_dataSet);
+            
+            selection2.enter().append("text").call(force.drag);
+            selection2.exit().remove();
+            
         }
-        function render(){
+    
+        function render(nested_dataSet){
         
+            var circleAttr = {
+                'cx' : function(d){ return d.px},
+                'cy' : function(d){ return d.py},
+                'r' : function (d){ return d.values/10}, 
+                'style' : function () {
+                    return 'fill:lightblue;opacity:0.6;stroke:yellow;stroke-width:3;'
+                },
+                'id' : function(d){ return d.key}
+            };
+            
+            var circleAttr_mOver = {
+                'cx' : function(d){ return d.px},
+                'cy' : function(d){ return d.py},
+                'r' : function (d){ return d.values/10}, 
+                'style' : function () {
+                    return 'fill:yellow;opacity:0.8;stroke:darkblue;stroke-width:3;'
+                },
+                'id' : function(d){ return d.key}
+            };
+            
+            var textAttr = {
+                'x' : function(d){ return d.px+10},
+                'y' : function(d){ return d.py+10},
+                'font-size' : "30px",
+                'fill' : "white",
+            }
             //TODO-把每個circle畫出來
             d3.selectAll("circle")
-               .attr({});
+              .text(function(d){ return d.key})
+              .attr(circleAttr)
+              .on("mouseover", function(d){
+                  d3.select(this).attr(circleAttr_mOver)
+              })
+              .on("mouseout", function(d){
+                  d3.select(this).attr(circleAttr)
+              })
+              .on("click", function(d){
+                  window.open("candlestick.html?" + this.getAttribute('id'))
+              });
+            
+            d3.selectAll("text")
+              .text(function(d){ return d.key})
+              .attr(textAttr);
             
         }
         
@@ -79,6 +138,3 @@
 
 </body>
 </html>
-force-hw.html
-使用「Google 文件」開啟
-目前顯示的是「force-hw.html」。

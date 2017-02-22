@@ -4,7 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>ptt股板是不是反指標呢?</title>
+    <title>個股資訊</title>
     <script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
     <link rel="stylesheet" href="stockpage.css">
 </head>
@@ -40,7 +40,10 @@
     ]);
     
     var datasource = "pttstock3.csv"
-    var selectedStock = "9999"
+    var url = location.href;
+    //取得問號之後的值
+    var temp = url.split("?");
+    var selectedStock = temp[1];
     
     //d3.select("select").on("change",function(){
     //    var value = d3.select("select").property("value");
@@ -104,6 +107,8 @@
         d.High = +d.High;
         d.Low = +d.Low;
         d.Close = +d.Close
+        d.L_score = +d.L_score
+        d.S_score = +d.S_score
         return d;
     }
     
