@@ -8,3 +8,26 @@
     font-size: 11px;
     fill: blue;
 }
+
+body{
+    background: #3B3B3B;
+}
+
+.axis line{
+    stroke: #DDDDDD;
+}
+
+.axis path{
+    stroke: #DDDDDD;
+}
+
+.axis text{
+    stroke: #DDDDDD;
+}
+
+div{
+    font-size: 15px;
+    color: aliceblue;
+    font-family: serif;
+    text-align: center;
+}

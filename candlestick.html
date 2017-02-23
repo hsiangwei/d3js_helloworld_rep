@@ -23,8 +23,8 @@
 <script type="text/javascript">
     
     //基本邊寬長度設定, 放上svg畫布
-    var w = 800, h = 400, p = 35, h2 = 200;
-    var barPadding = 1;
+    var w = 800, h = 400, p = 35, h2 = 150;
+    var barPadding = 0.3;
     var svg = d3.select("body").append('svg').attr('width', w).attr('height', h+h2);  
     
     //時間format, 給axis用的
@@ -41,9 +41,15 @@
     
     var datasource = "pttstock3.csv"
     var url = location.href;
-    //取得問號之後的值
+    //取得問號之後的參數值當作資料filter條件
     var temp = url.split("?");
-    var selectedStock = temp[1];
+    if(temp.length<2){
+        var selectedStock = "9999"
+    }
+    else{
+        var selectedStock = temp[1];
+    }
+    
     
     //d3.select("select").on("change",function(){
     //    var value = d3.select("select").property("value");
@@ -280,7 +286,7 @@
                 return h+50;
             },
             'r' : function (d, i) {
-                return (d.L_score/10)
+                return (d.L_score/6)
             },  
             'style' : function () {
                 return 'fill:pink;opacity:0.75;stroke:red;stroke-width:1;'
@@ -295,7 +301,7 @@
                 return h+100;
             },
             'r' : function (d, i) {
-                return -(d.S_score/10)
+                return -(d.S_score/6)
             },  
             'style' : function () {
                 return 'fill:lightgreen;opacity:0.75;stroke:green;stroke-width:1;'
@@ -317,7 +323,7 @@
     }
     
     </script>
-
+    <div>紅圈大小代表 ptt 股板喊 多 的討論熱度, 綠圈為喊 空 討論熱度.</div><br>
 
 </body>
 </html>
