@@ -23,6 +23,7 @@ Ptt 股票版討論熱度, 與股價走勢之視覺化.
 增加 PostItem 內容, L_score, S_score, isTarget, targetName  
 重新爬取資料.
 
+example : https://www.ptt.cc/bbs/Stock/M.1487741035.A.881.html
 
 ## 2. 網路爬蟲爬取台股半年資料
 本來想參考 https://github.com/Asoul/tsec 自製爬蟲
