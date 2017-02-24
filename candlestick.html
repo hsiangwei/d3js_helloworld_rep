@@ -20,6 +20,8 @@
     <option value="2330">2330 台積電</option>
 </select><br>-->
 
+<div id=selectedStock></div>
+
 <script type="text/javascript">
     
     //基本邊寬長度設定, 放上svg畫布
@@ -49,7 +51,32 @@
     else{
         var selectedStock = temp[1];
     }
-    
+
+    switch (selectedStock) {
+        case '9999':
+　           document.getElementById("selectedStock").innerHTML="大盤";
+　           break;
+        case '2317':
+　           document.getElementById("selectedStock").innerHTML="鴻海";
+　           break;
+        case '3406':
+　           document.getElementById("selectedStock").innerHTML="玉晶光";
+　           break;
+        case '2371':
+　           document.getElementById("selectedStock").innerHTML="大同";
+　           break;
+        case '6702':
+　           document.getElementById("selectedStock").innerHTML="復興航空";
+　           break;
+        case '2498':
+　           document.getElementById("selectedStock").innerHTML="宏達電";
+　           break;
+        case '2330':
+　           document.getElementById("selectedStock").innerHTML="台積電";
+　           break;
+        default:
+　           document.getElementById("selectedStock").innerHTML="無法辨識";
+}
     
     //d3.select("select").on("change",function(){
     //    var value = d3.select("select").property("value");

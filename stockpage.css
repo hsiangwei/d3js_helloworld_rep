@@ -31,3 +31,8 @@ div{
     font-family: serif;
     text-align: center;
 }
+
+#selectedStock{
+    font-size: 30px;
+
+}
